@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+  <script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+
+  <title>Tunnel Rush</title>
+
+  <style>
+  * {
+    padding: 0;
+    margin: 0;
+  }
+
+  @font-face {
+    font-family: myFirstFont;
+    src: url(./assets/fonts/mine.ttf);
+  }
+
+  #canvasContainer {
+    background: black;
+    text-align: center;
+  }
+
+  #scoreContainer {
+    visibility: visible;
+    position: absolute;
+    top: 5%;
+    left: 3%;
+    border-radius: 15px;
+    padding: 1.5%;
+    opacity: 0.4;
+    background-color: whitesmoke;
+  }
+
+
+  #gameOverContainer {
+    visibility: hidden;
+    position: absolute;
+    top: 35%;
+    left: 40%;
+    border-radius: 15px;
+    padding: 1.5%;
+    opacity: 0.4;
+    background-color: whitesmoke;
+  }
+  #gameOver ,#score{
+    font-family: myFirstFont;
+    font-size: 250%;
+    color: rgb(250, 0, 0);
+    }
+  </style>
+</head>
+<body onload='Initialize()'>
+
+  <div id='canvasContainer'>
+    <canvas id="canvas"></canvas>
+    
+    <div id='scoreContainer'>
+      <h1 id='score'></h1>
+    </div>
+    <div id='gameOverContainer'>
+      <h1 id='gameOver'></h1>
+    </div>
+  </div>
+  <audio src="assets/SubWay-Surfers.mp3" id='backaudio' loop></audio>
+</body>
+<script type="text/javascript" src="build.js"></script>
+</html>
