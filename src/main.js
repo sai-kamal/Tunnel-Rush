@@ -1,24 +1,19 @@
 var shaders = require('./shaders')
-var { drawModel, makeModel, drawLight } = require('./models')
+var { drawModel, makeModel} = require('./models')
 var m = require('./matrix')
 var vec = require('./vector')
-// var mt = require('mousetrap')
 
 window.playFlag = 1;
-window.jumpFlag = 1;
 window.grayScale = 0;
 window.nightVision = 0;
 window.gFlag = 1;
 window.nFlag = 1;
-window.gravity = 0.001;
+// window.gravity = 0.001;
 window.velocity = 1;
-window.jumpx = 0;
-window.jumpy = 0;
-window.jumpz = 0;
-
 window.level = 1;
 window.score = 0;
 window.prevScore = -10;
+
 var numObstacles = 7;
 var numObstacles2 = 5;
 var then = 0;
@@ -29,8 +24,8 @@ var scalez = 1;
 
 var up = [0, 1, 0];
 var outerRadius = 50.0 * scalex;
-window.revolveAngle = 0;
 var revolveRadius = outerRadius;
+window.revolveAngle = 0;
 window.revolveSpeed = 18;
 
 window.octRadius = 5 * scalex;//0.25
@@ -48,11 +43,6 @@ var Camera = {
   lookz: 0,
   tempx: 0,
   tempz: 0,
-  mouseUpdate: false,
-  fishLens: false,
-  fishView: false,
-  mouseX: 0,
-  mouseY: 0,
 }
 
 function toRadians (angle) {
@@ -83,18 +73,10 @@ function keyImplementation () {
   if (window.keyMap[83]) {
     window.revolveAngle += 0.7;
   }
-  if (window.keyMap[32] && window.jumpFlag) {
-    window.velocity = 0;
-    window.gravity = 0.1;
-    window.jumpFlag = 0;
-    // console.log("jump")
-  }
   if (window.keyMap[71] && window.gFlag) {
     window.grayScale = !window.grayScale;
     window.gFlag = 0;
     gl.uniform1i(gl.getUniformLocation(program, 'grayScale'), window.grayScale);
-    // console.log('g');
-    // console.log(window.grayScale);
   }
   if (!window.keyMap[71]) {
     window.gFlag = 1;
@@ -110,9 +92,6 @@ function keyImplementation () {
   if (!window.keyMap[78]) {
     window.nFlag = 1;
   }
-  // if(window.keyMap[32] == false) {
-  //   window.jumpFlag = 1;
-  // }
 }
 
 function autoMovement() {
@@ -124,23 +103,17 @@ function autoMovement() {
   var tempx = window.octRadius * Math.cos(toRadians(window.octAngle)) * Math.cos(toRadians(window.revolveAngle));
   Camera.y = window.octRadius * Math.sin(toRadians(window.octAngle));
   var tempz = window.octRadius * Math.cos(toRadians(window.octAngle)) * Math.sin(toRadians(window.revolveAngle));
-  // console.log("tempx", window.jumpx);
-  // console.log("tempz", window.jumpy);
-  // console.log(window.octAngle);
 
   Camera.x += tempx;
   Camera.z += tempz;
   window.octStepsA = 0;
   window.octStepsD = 0;
 
-  // var look = vec.cross([Camera.x, Camera.y, Camera.z], [0, 1, 0]);
   var look = vec.normalize(vec.cross(vec.normalize([Camera.x, Camera.y, Camera.z]), [0, 1, 0]));
   Camera.lookx = -look[0];
   Camera.looky = -look[1];
   Camera.lookz = -look[2];
   
-  // window.octAngle += window.octSpeed * window.deltaTime;
-  // window.octAngle = window.octAngle % 360;
   if(window.playFlag == 1) {
     window.revolveAngle -= window.revolveSpeed * window.deltaTime;
   }
@@ -149,30 +122,14 @@ function autoMovement() {
   up[0] = Math.round(-tempx);
   up[1] = Math.round(-Camera.y);
   up[2] = Math.round(-tempz);
-  
-  // var temp_up = [0, 0, 0];
-  // temp_up[0] = Math.cos(toRadians(window.revolveAngle)) - Camera.x;
-  // temp_up[1] = -Camera.y;
-  // temp_up[2] = Math.sin(toRadians(window.revolveAngle)) - Camera.z;
   if (window.jumpFlag == 0) {
     var cos = vec.dot(vec.normalize(up), vec.normalize([Camera.x, Camera.y, Camera.z]))
-    // var cos = vec.dot(vec.normalize(up), vec.normalize([Math.cos(toRadians(window.revolveAngle)), 0, Math.sin(toRadians(window.revolveAngle))]))
     var jump_angle = Math.round(Math.acos(cos) * (180 / Math.PI));
-    // console.log("jump_angle", jump_angle);
     if((window.octAngle % 360) <= 180 && window.octAngle >= 0) {
       jump_angle = 180 + 180 - jump_angle;
-    // }
     } else if (window.octAngle < 0 && (window.octAngle % 360) <= -180) {
       jump_angle = 180 + 180 - jump_angle;
     }
-
-    // console.log(Math.round(window.octAngle) % 360);
-    // console.log("up", vec.normalize(up));
-    // console.log(window.velocity);
-
-    window.jumpx = 0;
-    window.jumpy = 0;
-    window.jumpz = 0;
 
     if (window.velocity > 4) {
       window.velocity = 4;
@@ -180,20 +137,9 @@ function autoMovement() {
     } else if (window.velocity < 0) {
       window.velocity = 0;
       window.gravity = 0;
-      window.jumpFlag = 1;
     }
     window.velocity += window.gravity;
-    // window.velocity = window
-    window.jumpx = Math.cos(toRadians(jump_angle)) * window.velocity * Math.cos(toRadians(window.revolveAngle));
-    window.jumpy = Math.sin(toRadians(jump_angle)) * window.velocity;
-    window.jumpz = Math.cos(toRadians(jump_angle)) * window.velocity * Math.sin(toRadians(window.revolveAngle));
   }
-
-  Camera.x += window.jumpx;
-  Camera.y += window.jumpy;
-  Camera.y += window.jumpz;
-
-
 }
 
 function resizeCanvas() {
@@ -203,39 +149,30 @@ function resizeCanvas() {
 
 function Initialize()
 {
-  document.getElementById('backaudio').play()
+  document.getElementById('backaudio').play();
   window.canvas = document.getElementById("canvas");
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas)
-
-  // window.canvas.onmousemove = updateCameraTarget
-
+  window.addEventListener('resize', resizeCanvas);
+  
   window.gl = canvas.getContext("experimental-webgl");
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
+  
   // setup a GLSL program
   shaders.createShader('material')
   
-  // var temp = -20
-  // makeModel('obstacle', 'assets/cube', [revolveRadius * Math.cos(toRadians(temp)), 0, revolveRadius * Math.sin(toRadians(temp))],
-  //   [8, 4, 1], //scale
-  //   temp, //rotateAngle1
-  //   90); //rotateAngle2
-    
+  // pipe model
+  makeModel('pipe', 'assets/pipe',[0, 0, 0],[scalex, scaley, scalez], [0, 0, 0])//rotate dummy value = [0, 0, 0]
 
-
+  //obstacles model
   for(var i = 0; i < numObstacles; i++) {
     var temp = (Math.random() * 1000 % 360) - 360;
-    // var rotationSpeed = Math.random() * (2.5 - 0.5 + 1) + 0.5;
     makeModel('obstacle' + i, 'assets/cubetex', [revolveRadius * Math.cos(toRadians(temp)), 0, revolveRadius * Math.sin(toRadians(temp))],
       [8, 1, 1], //scale
       temp, //rotateAngle1
       Math.random() * 1000 % 360, //rotateAngle2
       0)
   }
-
-  makeModel('pipe', 'assets/pipe',[0, 0, 0],[scalex, scaley, scalez], [0, 0, 0])//rotate dummy value = [0, 0, 0]
-
+  //start the animation
   requestAnimationFrame(tick);
 }
 window.Initialize = Initialize
@@ -293,15 +230,6 @@ function animate(now) {
   then = now;
 }
 
-// var lastTime = 0;
-// function animate() {
-//   var timeNow = new Date().getTime();
-//   if (lastTime == 0) { lastTime = timeNow; return; }
-//   // var d = (timeNow - lastTime) / 50;
-//   updateCamera();
-//   lastTime = timeNow;
-// }
-
 function drawScene() {
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.1, 0.1, 0.1, 1.0);
@@ -310,12 +238,6 @@ function drawScene() {
   
   gl.enable(gl.DEPTH_TEST);
   gl.depthFunc(gl.LEQUAL);
-  
-  // Matrices.model = m.multiply(m.translate(table.center), m.scale(table.scale))
-  // drawModel(table)
-
-  // Matrices.model = m.multiply(m.translate(models.light.center), m.scale(models.light.scale))
-  // drawLight(modelslight)
 
   for(var i = 0; i < numObstacles; i++) {
     Matrices.model = m.multiply(m.translate(models["obstacle" + i].center),
@@ -335,26 +257,12 @@ function drawScene() {
       drawModel(models["obstacleBig" + i]);
     }
   }
-    
-  // console.log(Camera.x, Camera.y, Camera.z);
-  // Matrices.model = m.multiply(m.translate(models.obstacle.center), m.scale(models.obstacle.scale))
-  
-  // Matrices.model= m.multiply(m.translate(models.obstacle.center),
-  //   m.multiply(m.rotateY(toRadians(-models.obstacle.rotateAngle1)),
-  //     m.multiply(m.rotateZ(toRadians(models.obstacle.rotateAngle2)),
-  //       m.scale(models.obstacle.scale))));
-  // drawModel(models.obstacle)
 
   Matrices.model = m.multiply(m.translate(models.pipe.center), m.scale(models.pipe.scale))
   drawModel(models.pipe)
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.ONE, gl.ONE);
-  // if (Camera.x > aquariumSize.x || Camera.x < -aquariumSize.x ||
-  //   Camera.y > aquariumSize.y || Camera.y < -aquariumSize.y ||
-  //   Camera.z > aquariumSize.z || Camera.z < -aquariumSize.z) {
-  //   gl.enable(gl.CULL_FACE);
-  // }
 
   gl.disable(gl.CULL_FACE);
   gl.disable(gl.BLEND);
@@ -367,8 +275,6 @@ function updateCamera() {
   Matrices.projection = m.perspective(Math.PI/2, canvas.width / canvas.height, 0.1, 500);
   gl.uniformMatrix4fv(gl.getUniformLocation(program, "view"), false, Matrices.view);
   gl.uniformMatrix4fv(gl.getUniformLocation(program, "projection"), false, Matrices.projection);
-  // gl.uniform1i(gl.getUniformLocation(program, "isFishLens"), Camera.fishLens && Camera.fishView);
-  // return m.multiply(Matrices.projection, Matrices .view);
 
   var lightPos = [
     revolveRadius * Math.cos(toRadians(window.revolveAngle - 25)), 0,
@@ -419,7 +325,6 @@ function detectCollisions () {
     }
   }
   if(window.level >= 2) {
-    // console.log("camera.y", Camera.y);
     for(i = 0; i < numObstacles2; i++) {
       // console.log("obstacle.y" + i, models["obstacleBig" + i].center[1] - 4);
       // console.log("dist", Math.abs(models["obstacleBig" + i].center[1] - Camera.y));
@@ -434,7 +339,6 @@ function detectCollisions () {
         document.getElementById('gameOverContainer').style.visibility = "visible";
         document.getElementById('scoreContainer').style.visibility = "hidden";
         document.getElementById('gameOver').innerText = "GAME OVER \n\n SCORE: " + window.score + "\n\n" + "LEVEL: " + window.level;
-        console.log("yes" + i);
       }
     }
   }

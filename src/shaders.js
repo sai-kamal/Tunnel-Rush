@@ -58,7 +58,6 @@ function openFile(name, filename){
   $.get(filename + '.vs', function (vxShaderData) {
     var vxShader = compileShader(gl, vxShaderData, gl.VERTEX_SHADER)
     $.get(filename + '.frag', function (fragShaderData) {
-      // console.log(vxShaderData, fragShaderData)
       var fragShader = compileShader(gl, fragShaderData, gl.FRAGMENT_SHADER)
       createProgram(gl, name, vxShader, fragShader)
     }, 'text');
